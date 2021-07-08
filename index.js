@@ -32,7 +32,7 @@ const runPrompt = () => {
       message: 'What would you like to do?',
       choices: [
         'View all employees',
-        'View deparments',
+        'View departments',
         'View roles',
         'Add department',
         'Add role',
@@ -72,7 +72,7 @@ const runPrompt = () => {
           break;
 
         case 'Exit':
-          // res.end();
+          connection.end();
           break;
 
         default:
@@ -83,17 +83,49 @@ const runPrompt = () => {
 };
 
 const viewAllEmp = () => {
-  const query = 'SELECT employee.id,employee.first_name,employee.last_name,emp_role.title,emp_role.salary FROM employee INNER JOIN emp_role ON employee.role_id=emp_role.role_id';
+    console.log('\nVIEW ALL EMPLOYEES\n');
+    const query = 'SELECT * FROM employee';
+    // 'SELECT employee.id,employee.first_name,employee.last_name,emp_role.title,emp_role.salary FROM employee INNER JOIN emp_role ON employee.role_id=emp_role.role_id';
   // const query = 'SELECT employee.id,employee.first_name,employee.last_name FROM employee RIGHT JOIN emp_role.title,emp_role.salary FROM emp_role RIGHT JOIN department.name FROM department';
   connection.query(query, (err, res) => {
     if (err) throw err;
+    let employeeArray = [];
+    res.forEach(employee => employeeArray.push(employee));
     console.log('\n');
-    console.log('VIEW ALL EMPLOYEES');
-    console.table(res);
+    console.table(employeeArray);
     console.log('\n\n');
   });
   runPrompt();
 };
+
+const viewDept = () => {
+  console.log('\nVIEW DEPARTMENTS\n');
+  const query = 'SELECT * FROM department';
+connection.query(query, (err, res) => {
+  if (err) throw err;
+  let deptArray = [];
+  res.forEach(department => deptArray.push(department));
+  console.log('\n');
+  console.table(deptArray);
+  console.log('\n\n');
+});
+runPrompt();
+};
+
+const viewRoles = () => {
+  console.log('\nVIEW ROLES\n');
+  const query = 'SELECT * FROM emp_role';
+connection.query(query, (err, res) => {
+  if (err) throw err;
+  let rolesArray = [];
+  res.forEach(emp_role => rolesArray.push(emp_role));
+  console.log('\n');
+  console.table(rolesArray);
+  console.log('\n\n');
+});
+runPrompt();
+};
+
 
 const addDept = () => {
   inquirer
