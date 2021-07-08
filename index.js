@@ -12,7 +12,7 @@ const connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
   user: 'root',
-  password: '',
+  password: 'CocoLilyBenny',
   database: 'employDB',
 });
 
@@ -84,8 +84,6 @@ const runPrompt = () => {
 const viewAllEmp = () => {
   console.log('\nVIEW ALL EMPLOYEES\n');
   const query = 'SELECT * FROM employee';
-  // 'SELECT employee.id,employee.first_name,employee.last_name,emp_role.title,emp_role.salary FROM employee INNER JOIN emp_role ON employee.role_id=emp_role.role_id';
-  // const query = 'SELECT employee.id,employee.first_name,employee.last_name FROM employee RIGHT JOIN emp_role.title,emp_role.salary FROM emp_role RIGHT JOIN department.name FROM department';
   connection.query(query, (err, res) => {
     if (err) throw err;
     let employeeArray = [];
@@ -98,13 +96,13 @@ const viewAllEmp = () => {
 };
 
 const viewDept = () => {
-  console.log('\nVIEW DEPARTMENTS\n');
   const query = 'SELECT * FROM department';
   connection.query(query, (err, res) => {
     if (err) throw err;
     let deptArray = [];
     res.forEach(department => deptArray.push(department));
     console.log('\n');
+    console.log('\nVIEW DEPARTMENTS\n');
     console.table(deptArray);
     console.log('\n\n');
   });
@@ -112,13 +110,14 @@ const viewDept = () => {
 };
 
 const viewRoles = () => {
-  console.log('\nVIEW ROLES\n');
+  
   const query = 'SELECT * FROM emp_role';
   connection.query(query, (err, res) => {
     if (err) throw err;
     let rolesArray = [];
     res.forEach(emp_role => rolesArray.push(emp_role));
     console.log('\n');
+    console.log('\nVIEW ROLES\n');
     console.table(rolesArray);
     console.log('\n\n');
   });
@@ -140,12 +139,12 @@ const addDept = () => {
       },
     ])
     .then((answer) => {
-      const query =
-        'INSERT INTO emp_role SET ?',
-        {
+      connection.query(
+        'INSERT INTO department SET ?', {
           name: answer.name,
           dept_id: answer.dept_id
-        };
+        },
+      )
 
       console.log(
         `\n${answer.name} department added!\n`
@@ -173,14 +172,13 @@ const addRole = () => {
       },
     ])
     .then((answer) => {
-      const query =
-        'INSERT INTO emp_role SET ?',
-        {
+      connection.query(
+        'INSERT INTO emp_role SET ?', {
           title: answer.title,
           salary: answer.salary,
           role_id: answer.role_id
-        };
-
+        },
+      )
       console.log(
         `${answer.title} role added!`
       );
@@ -191,30 +189,34 @@ const addRole = () => {
 const addEmployee = () => {
   inquirer
     .prompt([{
-        name: 'new_emp_first_name',
+        name: 'first_name',
         type: 'input',
         message: 'What is the first name of the new employee?'
       },
       {
-        name: 'new_emp_last_name',
+        name: 'last_name',
         type: 'input',
         message: 'What is the last name of the new employee?'
       },
       {
-        name: 'new_emp_id',
+        name: 'id',
         type: 'input',
         message: 'What is the ID of the new employee?'
       },
       {
-        name: 'new_emp_role',
+        name: 'role',
         type: 'input',
         message: 'What is the role of the new employee?'
       },
     ])
     .then((answer) => {
-      const query =
-        'INSERT INTO employee (id,first_name,last_name) VALUES(answer.new_emp_id,answer.new_emp_first_name,answer.new_emp_last_name)';
-
+      connection.query(
+        'INSERT INTO employee SET ?', {
+          id: answer.id,
+          first_name: answer.first_name,
+          last_name: answer.last_name
+        },
+      )
       console.log(
         `New employee added!`
       );
@@ -245,9 +247,12 @@ const updateEmpRole = () => {
         message: 'What is the updated role for this employee?',
       })
     .then((answer) => {
-      const query =
-        'UPDATE employee SET ? WHERE ?', [{ first_name: employee.first_name }, { last_name: employee.last_name }];
-
+      connection.query(
+        'UPDATE employee SET ? WHERE ?', {
+          first_name: employee.first_name,
+          last_name: employee.last_name
+        },
+      )
       console.log(
         `Employee's role has been updated!\n`
       );
