@@ -18,6 +18,11 @@
   },
   "homepage": "https://github.com/amiracat/mysql-employee-tracker#readme",
   "dependencies": {
-    "inquirer": "^8.1.1"
+    "console.table": "^0.10.0",
+    "dotenv": "^10.0.0",
+    "inquirer": "^8.1.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.6.5"
   }
 }

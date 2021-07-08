@@ -1,23 +1,53 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const cTable = require('console.table');
+const connec = require('./connection');
 
-const connection = mysql.createConnection({
-  host: 'localhost',
-  port: process.env || 8080,
-  user: 'root',
-  password: 'CocoLilyBenny',
-  database: 'employDB',
-});
 
-connection.connect((err) => {
+const Sequelize = require('sequelize');
+require('dotenv').config();
+
+
+// const connection = mysql.createConnection({
+//   host: 'localhost',
+
+//   port: 3306,
+
+//   user: 'root',
+
+//   password: '',
+
+//   database: 'employDB',
+
+// });
+
+// connection.connect((err) => {
+//   if (err) throw err;
+//   console.log('Connected to employDB');
+//   runPrompt();
+// });
+
+
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  {
+    host: 'localhost',
+    dialect: 'mysql',
+    port: 3306,
+  }
+);
+
+sequelize.connect((err) => {
   if (err) throw err;
-  runSearch();
+  console.log('Connected to employDB');
+  runPrompt();
 });
 
+//in process - testing
 
-//very initial js code, for initial commit to GitHub
-
-const runSearch = () => {
+const runPrompt = () => {
   inquirer
     .prompt({
       name: 'action',
@@ -25,16 +55,27 @@ const runSearch = () => {
       message: 'What would you like to do?',
       choices: [
         'View all employees',
+        'View deparments',
+        'View roles',
         'Add department',
         'Add role',
         'Add employee',
         'Update employee role',
+        'Exit'
       ],
     })
     .then((answer) => {
       switch (answer.action) {
         case 'View all employees':
           viewAllEmp();
+          break;
+
+        case 'View departments':
+          viewDept();
+          break;
+
+        case 'View roles':
+          viewRoles();
           break;
 
         case 'Add department':
@@ -53,6 +94,10 @@ const runSearch = () => {
           updateEmpRole();
           break;
 
+        case 'Exit':
+          // res.end();
+          break;
+
         default:
           console.log(`Invalid action: ${answer.action}`);
           break;
@@ -61,125 +106,136 @@ const runSearch = () => {
 };
 
 const viewAllEmp = () => {
-  inquirer
-    .prompt({
-      name: 'artist',
-      type: 'input',
-      message: 'What artist would you like to search for?',
-    })
-    .then((answer) => {
-      const query = 'SELECT position, song, year FROM top5000 WHERE ?';
-      connection.query(query, { artist: answer.artist }, (err, res) => {
-        res.forEach(({ position, song, year }) => {
-          console.log(
-            `Position: ${position} || Song: ${song} || Year: ${year}`
-          );
-        });
-        runSearch();
-      });
-    });
+  const query = 'SELECT employee.id,employee.first_name,employee.last_name,emp_role.title,emp_role.salary FROM employee INNER JOIN emp_role ON employee.role_id=emp_role.role_id';
+  // const query = 'SELECT employee.id,employee.first_name,employee.last_name FROM employee RIGHT JOIN emp_role.title,emp_role.salary FROM emp_role RIGHT JOIN department.name FROM department';
+  connection.query(query, (err, res) => {
+    if (err) throw err;
+    console.log('\n');
+    console.log('VIEW ALL EMPLOYEES');
+    console.table(res);
+    console.log('\n\n');
+  });
+  runPrompt();
 };
 
 const addDept = () => {
-  const query =
-    'SELECT artist FROM top5000 GROUP BY artist HAVING count(*) > 1';
-  connection.query(query, (err, res) => {
-    res.forEach(({ artist }) => console.log(artist));
-    runSearch();
-  });
-};
-
-const addRole = () => {
   inquirer
-    .prompt([
-      {
-        name: 'start',
+    .prompt([{
+        name: 'new_dept_name',
         type: 'input',
-        message: 'Enter starting position: ',
-        validate(value) {
-          if (isNaN(value) === false) {
-            return true;
-          }
-          return false;
-        },
+        message: 'What is the name of the new department?'
       },
       {
-        name: 'end',
+        name: 'new_dept_id',
         type: 'input',
-        message: 'Enter ending position: ',
-        validate(value) {
-          if (isNaN(value) === false) {
-            return true;
-          }
-          return false;
-        },
+        message: 'What is the ID of the new department?'
       },
     ])
     .then((answer) => {
       const query =
-        'SELECT position,song,artist,year FROM top5000 WHERE position BETWEEN ? AND ?';
-      connection.query(query, [answer.start, answer.end], (err, res) => {
-        res.forEach(({ position, song, artist, year }) => {
-          console.log(
-            `Position: ${position} || Song: ${song} || Artist: ${artist} || Year: ${year}`
-          );
-        });
-        runSearch();
-      });
+        'INSERT INTO department (id,name) VALUES(prompt.new_dept_name,prompt.new_dept_id)';
+
+      console.log(
+        `New department has been added!`
+      );
+      runPrompt();
     });
+};
+
+const addRole = () => {
+  inquirer
+    .prompt([{
+        name: 'new_role_title',
+        type: 'input',
+        message: 'What is the title of the new role?'
+      },
+      {
+        name: 'new_role_id',
+        type: 'input',
+        message: 'What is the ID of the new role?'
+      },
+      {
+        name: 'new_role_salary',
+        type: 'input',
+        message: 'What is the salary of the new role?'
+      },
+    ])
+    .then((answer) => {
+      const query =
+        'INSERT INTO emp_role (id,title,salary) VALUES(prompt.new_role_id,prompt.new_role_title,prompt.new_role_salary)';
+
+      console.log(
+        `New role added!`
+      );
+      // });
+      runPrompt();
+    });
+  // });
 };
 
 const addEmployee = () => {
   inquirer
-    .prompt({
-      name: 'song',
-      type: 'input',
-      message: 'What song would you like to look for?',
-    })
+    .prompt([{
+        name: 'new_emp_first_name',
+        type: 'input',
+        message: 'What is the first name of the new employee?'
+      },
+      {
+        name: 'new_emp_last_name',
+        type: 'input',
+        message: 'What is the last name of the new employee?'
+      },
+      {
+        name: 'new_emp_id',
+        type: 'input',
+        message: 'What is the ID of the new employee?'
+      },
+      {
+        name: 'new_emp_role',
+        type: 'input',
+        message: 'What is the role of the new employee?'
+      },
+    ])
     .then((answer) => {
-      console.log(answer.song);
-      connection.query(
-        'SELECT * FROM top5000 WHERE ?',
-        { song: answer.song },
-        (err, res) => {
-          if (res[0]) {
-            console.log(
-              `Position: ${res[0].position} || Song: ${res[0].song} || Artist: ${res[0].artist} || Year: ${res[0].year}`
-            );
-          } else {
-            console.error(`No results for ${answer.song}`);
-          }
-          runSearch();
-        }
+      const query =
+        'INSERT INTO employee (id,first_name,last_name) VALUES(prompt.new_emp_id,prompt.new_emp_first_name,prompt.new_emp_last_name)';
+
+      console.log(
+        `New employee added!`
       );
+      runPrompt();
     });
 };
 
 const updateEmpRole = () => {
   inquirer
-    .prompt({
-      name: 'artist',
-      type: 'input',
-      message: 'What artist would you like to search for?',
-    })
+    .prompt(
+      // {
+      //   name: 'updated_emp',
+      //   type: 'list',
+      //   message: 'Select the employee whose role you want to update:',
+      //   choices: //list employees as choices
+      // },
+      {
+        name: 'update_role_first_name',
+        type: 'input',
+        message: 'What is the first name of the employee whose role you want to update?',
+      }, {
+        name: 'update_role_last_name',
+        type: 'input',
+        message: 'What is the last name of the employee whose role you want to update?',
+      }, {
+        name: 'update_role_title',
+        type: 'input',
+        message: 'What is the updated role for this employee?',
+      })
     .then((answer) => {
-      let query =
-        'SELECT top_albums.year, top_albums.album, top_albums.position, top5000.song, top5000.artist ';
-      query +=
-        'FROM top_albums INNER JOIN top5000 ON (top_albums.artist = top5000.artist AND top_albums.year ';
-      query +=
-        '= top5000.year) WHERE (top_albums.artist = ? AND top5000.artist = ?) ORDER BY top_albums.year, top_albums.position';
+      const query =
+        'INSERT INTO employee (id,first_name,last_name) VALUES(prompt.new_emp_id,prompt.new_emp_first_name,prompt.new_emp_last_name)';
 
-      connection.query(query, [answer.artist, answer.artist], (err, res) => {
-        console.log(`${res.length} matches found!`);
-        res.forEach(({ year, position, artist, song, album }, i) => {
-          const num = i + 1;
-          console.log(
-            `${num} Year: ${year} Position: ${position} || Artist: ${artist} || Song: ${song} || Album: ${album}`
-          );
-        });
-
-        runSearch();
-      });
+      console.log(
+        `Employee's role has been updated!`
+      );
+      runPrompt();
     });
 };
