@@ -110,7 +110,7 @@ const viewDept = () => {
 };
 
 const viewRoles = () => {
-  
+
   const query = 'SELECT * FROM emp_role';
   connection.query(query, (err, res) => {
     if (err) throw err;
@@ -152,104 +152,114 @@ const addDept = () => {
     });
 };
 
+//need help here
 const addRole = () => {
-  inquirer
-    .prompt([{
-        name: 'title',
-        type: 'input',
-        message: 'What is the title of the new role?'
-      },
-      {
-        name: 'role_id',
-        type: 'input',
-        message: 'What is the ID of the new role?'
-      },
-      {
-        name: 'salary',
-        type: 'input',
-        message: 'What is the salary of the new role?'
-      },
-    ])
-    .then((answer) => {
-      connection.query(
-        'INSERT INTO emp_role SET ?', {
-          title: answer.title,
-          salary: answer.salary,
-          role_id: answer.role_id
-        },
-      )
-      console.log(
-        `${answer.title} role added!`
-      );
-      runPrompt();
+  connection.query(
+    'SELECT * FROM department', (err, res) => {
+      inquirer
+        .prompt([{
+            name: 'title',
+            type: 'input',
+            message: 'What is the title of the new role?'
+          },
+          {
+            name: 'role_id',
+            type: 'input',
+            message: 'What is the ID of the new role?'
+          },
+          {
+            name: 'salary',
+            type: 'input',
+            message: 'What is the salary of the new role?'
+          },
+          {
+            name: 'name',
+            type: 'list',
+            message: 'Select the department of the new role?',
+            choices: res.map(i => i.name)
+          },
+        ])
+        .then((answer) => {
+          connection.query(
+            'INSERT INTO emp_role SET ?', {
+              title: answer.title,
+              role_id: answer.role_id,
+              salary: answer.salary,
+              dept_id: res.find((i => i.name === answer.name)).dept_id
+            },
+          )
+          console.log(
+            `\n${answer.title} role added!\n`
+          );
+          runPrompt();
+        });
     });
 };
 
 const addEmployee = () => {
-  inquirer
-    .prompt([{
-        name: 'first_name',
-        type: 'input',
-        message: 'What is the first name of the new employee?'
-      },
-      {
-        name: 'last_name',
-        type: 'input',
-        message: 'What is the last name of the new employee?'
-      },
-      {
-        name: 'id',
-        type: 'input',
-        message: 'What is the ID of the new employee?'
-      },
-      {
-        name: 'role',
-        type: 'input',
-        message: 'What is the role of the new employee?'
-      },
-    ])
-    .then((answer) => {
+  connection.query(
+    'SELECT * FROM emp_role', (roleErr, roleRes) => {
+
+      //add list of roles and a list of who can be manager
       connection.query(
-        'INSERT INTO employee SET ?', {
-          id: answer.id,
-          first_name: answer.first_name,
-          last_name: answer.last_name
-        },
-      )
-      console.log(
-        `New employee added!`
-      );
-      runPrompt();
+        'SELECT * FROM employee', (empErr, empRes) => {
+          inquirer
+            .prompt([{
+                name: 'first_name',
+                type: 'input',
+                message: 'What is the first name of the new employee?'
+              },
+              {
+                name: 'last_name',
+                type: 'input',
+                message: 'What is the last name of the new employee?'
+              },
+              {
+                name: 'title',
+                type: 'input',
+                message: 'What is the role of the new employee?'
+              }, //add
+            ])
+            .then((answer) => {
+              connection.query(
+                'INSERT INTO employee SET ?', {
+                  // id: answer.id,
+                  first_name: answer.first_name,
+                  last_name: answer.last_name
+                },
+                // see Add role above to add role_id
+                //
+              )
+              console.log(
+                `New employee added!`
+              );
+              runPrompt();
+            });
+        })
     });
 };
 
+
 const updateEmpRole = () => {
   inquirer
-    .prompt(
-      // {
-      //   name: 'update_employee',
-      //   type: 'list',
-      //   message: 'Select the employee whose role you want to update:',
-      //   choices: //list employees as choices
-      // },
-      {
-        name: 'first_name',
-        type: 'input',
-        message: 'What is the first name of the employee whose role you want to update?',
-      }, {
-        name: 'last_name',
-        type: 'input',
-        message: 'What is the last name of the employee whose role you want to update?',
-      }, {
-        name: 'title',
-        type: 'input',
-        message: 'What is the updated role for this employee?',
-      })
+    .prompt({
+      name: 'first_name',
+      type: 'input',
+      message: 'What is the first name of the employee whose role you want to update?',
+    }, {
+      name: 'last_name',
+      type: 'input',
+      message: 'What is the last name of the employee whose role you want to update?',
+    }, {
+      name: 'title',
+      type: 'input',
+      message: 'What is the updated role for this employee?',
+    })
     .then((answer) => {
       connection.query(
         'UPDATE employee SET ? WHERE ?', {
-          first_name: employee.first_name,
-          last_name: employee.last_name
+          first_name: answer.first_name,
+          last_name: answer.last_name
         },
       )
       console.log(
@@ -258,3 +268,4 @@ const updateEmpRole = () => {
       runPrompt();
     });
 };
+3
