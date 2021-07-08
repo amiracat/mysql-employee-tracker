@@ -1,45 +1,22 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const cTable = require('console.table');
-const connec = require('./connection');
+const consoleTable = require('console.table');
+// const connec = require('./connection');
+const util = require('util');
+
+// const Sequelize = require('sequelize');
+// require('dotenv').config();
 
 
-const Sequelize = require('sequelize');
-require('dotenv').config();
+const connection = mysql.createConnection({
+  host: 'localhost',
+  port: 3306,
+  user: 'root',
+  password: '',
+  database: 'employDB',
+});
 
-
-// const connection = mysql.createConnection({
-//   host: 'localhost',
-
-//   port: 3306,
-
-//   user: 'root',
-
-//   password: '',
-
-//   database: 'employDB',
-
-// });
-
-// connection.connect((err) => {
-//   if (err) throw err;
-//   console.log('Connected to employDB');
-//   runPrompt();
-// });
-
-
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: 'localhost',
-    dialect: 'mysql',
-    port: 3306,
-  }
-);
-
-sequelize.connect((err) => {
+connection.connect((err) => {
   if (err) throw err;
   console.log('Connected to employDB');
   runPrompt();
