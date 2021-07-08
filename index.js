@@ -12,7 +12,7 @@ const connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
   user: 'root',
-  password: 'CocoLilyBenny',
+  password: '',
   database: 'employDB',
 });
 
@@ -82,13 +82,13 @@ const runPrompt = () => {
 };
 
 const viewAllEmp = () => {
-  console.log('\nVIEW ALL EMPLOYEES\n');
   const query = 'SELECT * FROM employee';
   connection.query(query, (err, res) => {
     if (err) throw err;
     let employeeArray = [];
     res.forEach(employee => employeeArray.push(employee));
     console.log('\n');
+    console.log('\nVIEW ALL EMPLOYEES\n');
     console.table(employeeArray);
     console.log('\n\n');
   });
@@ -145,7 +145,6 @@ const addDept = () => {
           dept_id: answer.dept_id
         },
       )
-
       console.log(
         `\n${answer.name} department added!\n`
       );
