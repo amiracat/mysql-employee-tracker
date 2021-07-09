@@ -2,7 +2,8 @@
 
 This app is a solution to manage a company's employees using node, inquirer and MySQL.
 
-Here is a link to a video walkthrough of this app: https://drive.google.com/file/d/1qZ-0uPwG6usRZqyFP1yWUxZ8PZQWSvhP/view
+Here is a link to a video walkthrough of this app: 
+https://drive.google.com/file/d/1gKDcrT4gf5N4yoqPE8VOp6HnBdtWNHQe/view (Updated video link)
 
 To install the app, run npm install. Then type node index.js into your console and follow the prompts to create your employee database.
 
