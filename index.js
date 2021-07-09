@@ -12,7 +12,7 @@ const connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
   user: 'root',
-  password: '',
+  password: 'CocoLilyBenny',
   database: 'employDB',
 });
 
@@ -128,21 +128,14 @@ const viewRoles = () => {
 const addDept = () => {
   inquirer
     .prompt([{
-        name: 'name',
-        type: 'input',
-        message: 'What is the name of the new department?'
-      },
-      {
-        name: 'dept_id',
-        type: 'input',
-        message: 'What is the ID of the new department?'
-      },
-    ])
+      name: 'name',
+      type: 'input',
+      message: 'What is the name of the new department?'
+    }, ])
     .then((answer) => {
       connection.query(
         'INSERT INTO department SET ?', {
           name: answer.name,
-          dept_id: answer.dept_id
         },
       )
       console.log(
@@ -152,7 +145,6 @@ const addDept = () => {
     });
 };
 
-//need help here
 const addRole = () => {
   connection.query(
     'SELECT * FROM department', (err, res) => {
@@ -161,11 +153,6 @@ const addRole = () => {
             name: 'title',
             type: 'input',
             message: 'What is the title of the new role?'
-          },
-          {
-            name: 'role_id',
-            type: 'input',
-            message: 'What is the ID of the new role?'
           },
           {
             name: 'salary',
@@ -183,11 +170,10 @@ const addRole = () => {
           connection.query(
             'INSERT INTO emp_role SET ?', {
               title: answer.title,
-              role_id: answer.role_id,
               salary: answer.salary,
               dept_id: res.find((i => i.name === answer.name)).dept_id
             },
-          )
+          );
           console.log(
             `\n${answer.title} role added!\n`
           );
@@ -199,8 +185,6 @@ const addRole = () => {
 const addEmployee = () => {
   connection.query(
     'SELECT * FROM emp_role', (roleErr, roleRes) => {
-
-      //add list of roles and a list of who can be manager
       connection.query(
         'SELECT * FROM employee', (empErr, empRes) => {
           inquirer
@@ -216,20 +200,29 @@ const addEmployee = () => {
               },
               {
                 name: 'title',
-                type: 'input',
-                message: 'What is the role of the new employee?'
-              }, //add
+                type: 'list',
+                message: 'What is the role of the new employee?',
+                choices: roleRes.map(roleI => roleI.title)
+              },
+              {
+                name: 'manager',
+                type: 'list',
+                message: 'Select the manager of the new employee:',
+                choices: empRes.map(empI => ({
+                  value: empI.id,
+                  name: `${empI.first_name} ${empI.last_name}`
+                }))
+              },
             ])
             .then((answer) => {
               connection.query(
                 'INSERT INTO employee SET ?', {
-                  // id: answer.id,
                   first_name: answer.first_name,
-                  last_name: answer.last_name
+                  last_name: answer.last_name,
+                  role_id: roleRes.find((roleI => roleI.title === answer.title)).role_id,
+                  manager_id: answer.manager
                 },
-                // see Add role above to add role_id
-                //
-              )
+              );
               console.log(
                 `New employee added!`
               );
@@ -238,7 +231,6 @@ const addEmployee = () => {
         })
     });
 };
-
 
 const updateEmpRole = () => {
   inquirer
@@ -268,4 +260,3 @@ const updateEmpRole = () => {
       runPrompt();
     });
 };
-3
